@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โปรแกรมใบเสนอราคา</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f0f4f9;
+    --surface: #ffffff;
+    --border: #c8d6e8;
+    --border-light: #dce8f4;
+    --text: #0f1f35;
+    --text-muted: #5a7499;
+    --text-hint: #95aec6;
+    --accent: #1a56a0;
+    --accent-light: #e6f0fb;
+    --accent-text: #0f3a72;
+    --danger: #c0392b;
+    --danger-bg: #fdf0ef;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --font: 'Sarabun', 'Segoe UI', sans-serif;
+  }
+
+  @import url('data:text/css,'); /* no external fonts — use system */
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  h1.app-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent-text);
+    margin-bottom: 0.25rem;
+  }
+  .app-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+  .container { max-width: 820px; margin: 0 auto; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+
+  label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 500; }
+
+  input[type=text], input[type=number], input[type=date], textarea, select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: var(--font);
+    color: var(--text);
+    background: #f7fafd;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 64px; }
+
+  .field { margin-bottom: 0; }
+
+  /* items table */
+  .items-head {
+    display: grid;
+    grid-template-columns: 3fr 70px 110px 110px 36px;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 4px 8px;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 8px;
+  }
+  .item-block {
+    background: #f7fafd;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .item-block:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,86,160,0.08); }
+  .item-row {
+    display: grid;
+    grid-template-columns: 3fr 70px 110px 110px 36px;
+    align-items: stretch;
+  }
+  .item-row input {
+    font-size: 13px;
+    padding: 8px 8px;
+    border: none;
+    border-right: 1px solid var(--border-light);
+    border-radius: 0;
+    background: transparent;
+    width: 100%;
+  }
+  .item-row input:focus { background: #fff; box-shadow: none; }
+  .item-sub-row { border-top: 1px solid var(--border-light); }
+  .item-sub-input {
+    width: 100%;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+    outline: none;
+    font-style: italic;
+    display: block;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.6;
+    min-height: 28px;
+  }
+  .item-sub-input:focus { background: #fff; }
+  .item-sub-input::placeholder { color: var(--text-hint); font-style: italic; }
+  .item-subtotal {
+    font-size: 13px;
+    font-weight: 500;
+    text-align: right;
+    padding: 8px 8px;
+    background: #edf4fc;
+    color: var(--accent-text);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+  .del-btn {
+    background: none;
+    border: none;
+    border-left: 1px solid var(--border-light);
+    width: 36px;
+    cursor: pointer;
+    color: var(--text-hint);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .del-btn:hover { background: var(--danger-bg); color: var(--danger); }
+
+  .add-item-btn {
+    width: 100%;
+    padding: 9px;
+    background: none;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 6px;
+    font-family: var(--font);
+    transition: all 0.15s;
+  }
+  .add-item-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent-text); }
+
+  /* totals */
+  .totals-wrap { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light); }
+  .total-line {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .total-line .lbl { color: var(--text-muted); min-width: 140px; text-align: right; }
+  .total-line .val { min-width: 130px; text-align: right; font-weight: 500; }
+  .total-line.grand { font-size: 17px; padding-top: 8px; border-top: 1.5px solid var(--border); margin-top: 6px; }
+  .total-line.grand .lbl { color: var(--accent-text); font-weight: 600; }
+  .total-line.grand .val { color: var(--accent-text); font-size: 20px; }
+
+  /* logo upload */
+  .logo-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #f7fafd;
+    position: relative;
+  }
+  .logo-upload-area:hover { border-color: var(--accent); background: var(--accent-light); }
+  .logo-upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .logo-preview { max-height: 70px; max-width: 200px; object-fit: contain; display: block; margin: 0 auto; }
+  .logo-hint { font-size: 12px; color: var(--text-hint); }
+  .logo-remove { font-size: 11px; color: var(--danger); background: none; border: none; cursor: pointer; margin-top: 4px; display: inline-block; }
+
+  /* vat row */
+  .vat-row { display: flex; align-items: center; gap: 12px; margin-top: 0.75rem; }
+  .vat-row label { margin: 0; white-space: nowrap; }
+  .vat-row select { width: auto; min-width: 130px; }
+
+  /* action buttons */
+  .actions { display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 22px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font);
+    transition: all 0.15s;
+  }
+  .btn:hover { background: #e8f0fb; }
+  .btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn.primary:hover { background: #1d4a37; }
+  .btn.danger { border-color: var(--danger); color: var(--danger); }
+  .btn.danger:hover { background: var(--danger-bg); }
+
+  /* ============ PRINT PREVIEW ============ */
+  #preview-section { display: none; margin-top: 1.5rem; }
+  #preview-section.show { display: block; }
+
+  #preview-doc {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2.5rem 2.5rem 2rem;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #1a1917;
+    max-width: 820px;
+  }
+
+  #preview-doc .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    padding: 1.4rem 1.8rem 1.2rem;
+    border-bottom: 2.5px solid #1a56a0;
+    gap: 1rem;
+  }
+  #preview-doc .doc-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  #preview-doc .doc-header-logo {
+    max-height: 56px;
+    max-width: 110px;
+    object-fit: contain;
+    display: block;
+  }
+  #preview-doc .doc-seller-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f1f35;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+  }
+  #preview-doc .doc-seller-sub {
+    font-size: 12px;
+    color: #5a7499;
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+  #preview-doc .doc-badge {
+    text-align: right;
+    white-space: nowrap;
+  }
+  #preview-doc .doc-badge .badge-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #1a56a0;
+    margin-bottom: 2px;
+  }
+  #preview-doc .doc-badge .no {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f1f35;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+  }
+  #preview-doc .doc-badge .badge-date {
+    font-size: 11px;
+    color: #5a7499;
+    margin-top: 2px;
+  }
+  #preview-doc .doc-header-divider { display: none; }
+  #preview-doc .doc-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  #preview-doc .party-label { font-size: 10px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  #preview-doc .party-name { font-size: 15px; font-weight: 600; color: #1a1917; }
+  #preview-doc .party-detail { font-size: 12px; color: #666; white-space: pre-line; }
+  #preview-doc table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 13px; }
+  #preview-doc thead tr { background: #edf4fc; }
+  #preview-doc th { padding: 9px 12px; text-align: left; font-weight: 600; font-size: 11px; color: #1a56a0; border-bottom: 1.5px solid #b8d0ea; }
+  #preview-doc td { padding: 9px 12px; border-bottom: 1px solid #eee; color: #1a1917; }
+  #preview-doc .r { text-align: right; }
+  #preview-doc .doc-totals { margin-top: 0.5rem; }
+  #preview-doc .doc-total-row { display: flex; justify-content: flex-end; font-size: 13px; gap: 1rem; margin-bottom: 5px; }
+  #preview-doc .doc-total-row .tl { color: #777; min-width: 130px; text-align: right; }
+  #preview-doc .doc-total-row .tv { min-width: 120px; text-align: right; font-weight: 500; }
+  #preview-doc .doc-grand-row {
+    display: flex; justify-content: flex-end; gap: 1rem;
+    margin-top: 8px; padding-top: 10px; border-top: 2px solid #1a1917;
+    font-size: 16px; font-weight: 700; color: #1a1917;
+  }
+  #preview-doc .doc-grand-row .tl { min-width: 130px; text-align: right; }
+  #preview-doc .doc-grand-row .tv { min-width: 120px; text-align: right; }
+  #preview-doc .doc-note { background: #f0f7ff; border-left: 3px solid #7aaee0; padding: 10px 14px; border-radius: 4px; margin-top: 1.25rem; font-size: 12px; color: #2a4a70; }
+  #preview-doc .doc-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; font-size: 11px; color: #bbb; text-align: center; }
+
+  /* ============ PRINT ============ */
+  @media print {
+    @page { size: A4 portrait; margin: 1cm 1.5cm; }
+    body { background: white; padding: 0; margin: 0; }
+    .no-print { display: none !important; }
+    #preview-section { display: block !important; }
+    #preview-doc {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+      max-width: 100%;
+      font-size: 11px;
+    }
+    #preview-doc .doc-seller-name { font-size: 14px; }
+    #preview-doc .doc-seller-sub { font-size: 9px; }
+    #preview-doc .doc-badge .no { font-size: 14px; }
+    #preview-doc .doc-badge .badge-date { font-size: 9px; }
+    #preview-doc .doc-header { padding: 0.8rem 1rem; }
+    #preview-doc .doc-header-divider { display: none; }
+    #preview-doc .doc-parties { margin-bottom: 0.6rem; }
+    #preview-doc .party-name { font-size: 12px; }
+    #preview-doc .party-detail { font-size: 10px; }
+    #preview-doc hr { margin: 0.6rem 0; }
+    #preview-doc table { font-size: 10.5px; margin: 0.5rem 0; }
+    #preview-doc th { padding: 5px 8px; font-size: 9.5px; }
+    #preview-doc td { padding: 5px 8px; }
+    #preview-doc .doc-total-row { font-size: 10.5px; margin-bottom: 3px; }
+    #preview-doc .doc-grand-row { font-size: 13px; padding-top: 6px; margin-top: 4px; }
+    #preview-doc .doc-note { padding: 6px 10px; font-size: 10px; margin-top: 0.6rem; }
+    #preview-doc .doc-footer { margin-top: 0.8rem; padding-top: 0.5rem; font-size: 10px; }
+    #preview-doc .doc-header { margin-bottom: 0.6rem; }
+    .container { max-width: 100%; margin: 0; }
+    h1.app-title, .app-sub { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="no-print">
+    <h1 class="app-title">📋 ใบเสนอราคา</h1>
+    <p class="app-sub">กรอกข้อมูล → ดูตัวอย่าง → พิมพ์หรือบันทึก PDF</p>
+  </div>
+
+  <!-- ผู้ขาย -->
+  <div class="card no-print">
+    <div class="card-title">ข้อมูลผู้ออกใบเสนอราคา</div>
+    <div style="display:grid; grid-template-columns: 160px 1fr; gap:16px; margin-bottom:12px; align-items:start;">
+      <div>
+        <label>โลโก้บริษัท</label>
+        <div class="logo-upload-area" id="logo-area" onclick="document.getElementById('logo-input').click()">
+          <input type="file" id="logo-input" accept="image/*" style="display:none" onchange="handleLogo(event)">
+          <div id="logo-placeholder">
+            <div style="font-size:24px; margin-bottom:4px;">🖼</div>
+            <div class="logo-hint">คลิกเพื่ออัปโหลดโลโก้<br><span style="font-size:11px;">JPG, PNG, SVG</span></div>
+          </div>
+          <img id="logo-img" class="logo-preview" style="display:none;">
+        </div>
+        <button class="logo-remove" id="logo-remove-btn" style="display:none;" onclick="removeLogo()">✕ ลบโลโก้</button>
+        <div id="logo-color-toggle" style="display:none; margin-top:6px;">
+          <label style="font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="logo-invert" checked onchange="showPreview()"> โลโก้สีขาว (บน header สี)
+          </label>
+        </div>
+      </div>
+      <div>
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div class="field"><label>ชื่อบริษัท / ร้านค้า</label><input id="seller-name" type="text" placeholder="บริษัท ABC จำกัด"></div>
+          <div class="field"><label>ชื่อผู้เสนอราคา</label><input id="seller-person" type="text" placeholder="คุณสมหญิง รักงาน"></div>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>ที่อยู่</label><input id="seller-addr" type="text" placeholder="123 ถ.สุขุมวิท กรุงเทพฯ"></div>
+          <div class="field"><label>เบอร์โทร / อีเมล</label><input id="seller-contact" type="text" placeholder="02-xxx-xxxx"></div>
+          <div class="field"><label>เลขที่ใบเสนอราคา</label><input id="quote-no" type="text" placeholder="QT-2026-001"></div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="field"><label>วันที่</label><input id="quote-date" type="date" style="max-width:200px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ลูกค้า -->
+  <div class="card no-print">
+    <div class="card-title">ข้อมูลลูกค้า</div>
+    <div class="grid-2" style="margin-bottom:12px;">
+      <div class="field"><label>ชื่อผู้ติดต่อ</label><input id="client-name" type="text" placeholder="คุณสมชาย ใจดี"></div>
+      <div class="field"><label>บริษัท / องค์กร</label><input id="client-company" type="text" placeholder="บริษัท XYZ จำกัด"></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:12px;">
+      <div class="field"><label>เบอร์โทร / อีเมล</label><input id="client-contact" type="text" placeholder="081-xxx-xxxx"></div>
+      <div class="field"><label>เลขประจำตัวผู้เสียภาษี (ถ้ามี)</label><input id="client-taxid" type="text" placeholder="0000000000000"></div>
+    </div>
+    <div class="field"><label>ที่อยู่</label><textarea id="client-addr" placeholder="ที่อยู่สำหรับจัดส่งหรือออกใบกำกับ"></textarea></div>
+  </div>
+
+  <!-- รายการ -->
+  <div class="card no-print">
+    <div class="card-title">รายการสินค้า / บริการ</div>
+    <div class="items-head">
+      <span>รายการ</span><span style="text-align:center">จำนวน</span><span style="text-align:right">ราคา/หน่วย (฿)</span><span style="text-align:right">รวม (฿)</span><span></span>
+    </div>
+    <div id="items-container"></div>
+    <button class="add-item-btn" onclick="addItem()">+ เพิ่มรายการ</button>
+
+    <div class="vat-row">
+      <label>ภาษีมูลค่าเพิ่ม (VAT):</label>
+      <select id="vat" onchange="recalc()">
+        <option value="0">ไม่มี VAT</option>
+        <option value="7" selected>7%</option>
+        <option value="10">10%</option>
+      </select>
+    </div>
+
+    <div class="totals-wrap">
+      <div class="total-line"><span class="lbl">ราคาก่อน VAT</span><span class="val" id="subtotal-display">฿0.00</span></div>
+      <div class="total-line" id="vat-line"><span class="lbl" id="vat-label">VAT 7%</span><span class="val" id="vat-display">฿0.00</span></div>
+      <div class="total-line grand"><span class="lbl">ยอดรวมทั้งสิ้น</span><span class="val" id="grand-display">฿0.00</span></div>
+    </div>
+  </div>
+
+  <!-- หมายเหตุ -->
+  <div class="card no-print">
+    <div class="card-title">หมายเหตุ / เงื่อนไข</div>
+    <textarea id="note" style="min-height:100px; line-height:1.8;" placeholder="พิมพ์หมายเหตุได้เลย กด Enter เพื่อขึ้นบรรทัดใหม่&#10;เช่น• ราคานี้มีผลภายใน 30 วัน&#10;• ชำระภายใน 30 วันหลังได้รับใบแจ้งหนี้&#10;• ราคารวม VAT แล้ว"></textarea>
+    <div style="font-size:11px; color:var(--text-hint); margin-top:5px;">💡 กด Enter เพื่อขึ้นบรรทัดใหม่ได้เลย</div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions no-print">
+    <button class="btn primary" onclick="showPreview()">👁 ดูตัวอย่างก่อนพิมพ์</button>
+    <button class="btn" onclick="exportPDF()">📄 Export PDF</button>
+    <button class="btn" onclick="printFit()">🖨 พิมพ์ให้พอดี 1 หน้า</button>
+    <button class="btn" onclick="window.print()">🖨 พิมพ์ปกติ</button>
+    <button class="btn" onclick="resetForm()">🗑 ล้างข้อมูล</button>
+  </div>
+
+  <!-- Preview -->
+  <div id="preview-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;" class="no-print">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:13px; color:var(--text-muted); font-weight:600;">ตัวอย่างใบเสนอราคา</span>
+        <span id="fit-badge" style="display:none; font-size:11px; background:#e6f0fb; color:#1a56a0; border:1px solid #b8d0ea; border-radius:4px; padding:2px 8px;">📐 โหมดพอดี 1 หน้า</span>
+      </div>
+      <button class="btn" style="padding:6px 14px; font-size:12px;" onclick="document.getElementById('preview-section').classList.remove('show'); resetScale()">✕ ปิด</button>
+    </div>
+    <div id="preview-doc"></div>
+  </div>
+</div>
+
+<script>
+let items = [];
+let nextId = 1;
+let logoDataUrl = '';
+
+function handleLogo(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    logoDataUrl = ev.target.result;
+    document.getElementById('logo-img').src = logoDataUrl;
+    document.getElementById('logo-img').style.display = 'block';
+    document.getElementById('logo-placeholder').style.display = 'none';
+    document.getElementById('logo-remove-btn').style.display = 'inline-block';
+    document.getElementById('logo-color-toggle').style.display = 'block';
+    document.getElementById('logo-area').style.cursor = 'default';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  logoDataUrl = '';
+  document.getElementById('logo-img').src = '';
+  document.getElementById('logo-img').style.display = 'none';
+  document.getElementById('logo-placeholder').style.display = 'block';
+  document.getElementById('logo-remove-btn').style.display = 'none';
+  document.getElementById('logo-color-toggle').style.display = 'none';
+  document.getElementById('logo-input').value = '';
+  document.getElementById('logo-area').style.cursor = 'pointer';
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function fmt(n) {
+  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function addItem(desc, qty, price, detail) {
+  const id = nextId++;
+  items.push({ id, desc: desc||'', qty: qty||1, price: price||0, detail: detail||'' });
+  renderItems();
+}
+
+function removeItem(id) {
+  items = items.filter(i => i.id !== id);
+  renderItems();
+}
+
+function renderItems() {
+  const cont = document.getElementById('items-container');
+  cont.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'item-block';
+    div.innerHTML = `
+      <div class="item-row">
+        <input type="text" value="${escHtml(item.desc)}" placeholder="ชื่อสินค้า / บริการ" oninput="setField(${item.id},'desc',this.value)">
+        <input type="number" min="0" step="1" value="${item.qty}" style="text-align:center;" oninput="setField(${item.id},'qty',+this.value)">
+        <input type="number" min="0" step="0.01" value="${item.price}" style="text-align:right;" oninput="setField(${item.id},'price',+this.value)">
+        <div class="item-subtotal">${fmt(item.qty * item.price)}</div>
+        <button class="del-btn" onclick="removeItem(${item.id})" title="ลบรายการ">✕</button>
+      </div>
+      <div class="item-sub-row">
+        <textarea class="item-sub-input" rows="1" placeholder="รายละเอียดเพิ่มเติม เช่น สี, ขนาด, รุ่น, เงื่อนไข... (Enter ขึ้นบรรทัดใหม่)" oninput="setField(${item.id},'detail',this.value);autoResize(this)">${escHtml(item.detail||'')}</textarea>
+      </div>`;
+    cont.appendChild(div);
+  });
+  recalc();
+}
+
+function setField(id, field, val) {
+  const item = items.find(i => i.id === id);
+  if (item) {
+    item[field] = val;
+    if (field === 'qty' || field === 'price') {
+      const blocks = document.querySelectorAll('.item-block');
+      const idx = items.indexOf(item);
+      if (blocks[idx]) blocks[idx].querySelector('.item-subtotal').textContent = fmt(item.qty * item.price);
+    }
+  }
+  recalc();
+}
+
+function recalc() {
+  const sub = items.reduce((s, i) => s + (i.qty * i.price), 0);
+  const vatPct = +document.getElementById('vat').value;
+  const vatAmt = sub * vatPct / 100;
+  const grand = sub + vatAmt;
+  document.getElementById('subtotal-display').textContent = '฿' + fmt(sub);
+  document.getElementById('vat-display').textContent = '฿' + fmt(vatAmt);
+  document.getElementById('vat-label').textContent = 'VAT ' + vatPct + '%';
+  document.getElementById('grand-display').textContent = '฿' + fmt(grand);
+  const vatLine = document.getElementById('vat-line');
+  vatLine.style.display = vatPct > 0 ? 'flex' : 'none';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showPreview() {
+  const seller = document.getElementById('seller-name').value || 'ผู้ขาย';
+  const sellerPerson = document.getElementById('seller-person').value || '';
+  const sellerAddr = document.getElementById('seller-addr').value || '';
+  const sellerContact = document.getElementById('seller-contact').value || '';
+  const quoteNo = document.getElementById('quote-no').value || '-';
+  const rawDate = document.getElementById('quote-date').value;
+  const dateStr = rawDate ? new Date(rawDate + 'T00:00:00').toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' }) : '';
+  const client = document.getElementById('client-name').value || '';
+  const clientCompany = document.getElementById('client-company').value || '';
+  const clientContact = document.getElementById('client-contact').value || '';
+  const clientTaxId = document.getElementById('client-taxid').value || '';
+  const clientAddr = document.getElementById('client-addr').value || '';
+  const note = document.getElementById('note').value || '';
+  const vatPct = +document.getElementById('vat').value;
+  const sub = items.reduce((s, i) => s + i.qty * i.price, 0);
+  const vatAmt = sub * vatPct / 100;
+  const grand = sub + vatAmt;
+
+  const rows = items.map((item, idx) => `
+    <tr>
+      <td style="vertical-align:top; padding-top:10px;">${idx+1}</td>
+      <td>
+        <div style="font-weight:500;">${escHtml(item.desc || '-')}</div>
+        ${item.detail ? `<div style="font-size:11px; color:#6b8ab0; margin-top:2px; font-style:italic; white-space:pre-line;">${escHtml(item.detail)}</div>` : ''}
+      </td>
+      <td class="r" style="vertical-align:top; padding-top:10px;">${fmt(item.qty)}</td>
+      <td class="r" style="vertical-align:top; padding-top:10px;">฿${fmt(item.price)}</td>
+      <td class="r" style="vertical-align:top; padding-top:10px;">฿${fmt(item.qty * item.price)}</td>
+    </tr>`).join('');
+
+  const vatRow = vatPct > 0 ? `
+    <div class="doc-total-row"><span class="tl">VAT ${vatPct}%</span><span class="tv">฿${fmt(vatAmt)}</span></div>` : '';
+
+  document.getElementById('preview-doc').innerHTML = `
+    <div class="doc-header">
+      <div class="doc-header-left">
+        ${logoDataUrl ? `<img class="doc-header-logo" src="${logoDataUrl}">` : ''}
+        <div>
+          <div class="doc-seller-name">${escHtml(seller)}</div>
+          ${sellerAddr ? `<div class="doc-seller-sub">${escHtml(sellerAddr)}</div>` : ''}
+          ${sellerContact ? `<div class="doc-seller-sub">${escHtml(sellerContact)}</div>` : ''}
+        </div>
+      </div>
+      <div class="doc-badge">
+        <div class="badge-label">ใบเสนอราคา</div>
+        <div class="no">${escHtml(quoteNo)}</div>
+        ${dateStr ? `<div class="badge-date">${dateStr}</div>` : ''}
+      </div>
+    </div>
+    <div class="doc-header-divider"></div>
+    <div class="doc-parties" style="margin-top:1.1rem;">
+      <div>
+        <div class="party-label">เสนอราคาให้</div>
+        ${clientCompany ? `<div class="party-name">${escHtml(clientCompany)}</div>` : ''}
+        ${client ? `<div style="font-size:13px; color:#2a4a70; margin-top:${clientCompany?'2px':'0'};">${escHtml(client)}</div>` : (!clientCompany ? `<div class="party-name">-</div>` : '')}
+        ${clientTaxId ? `<div style="font-size:11px; color:#8aa4c0; margin-top:3px;">เลขภาษี: ${escHtml(clientTaxId)}</div>` : ''}
+        ${clientContact ? `<div class="party-detail" style="margin-top:4px;">${escHtml(clientContact)}</div>` : ''}
+        ${clientAddr ? `<div class="party-detail" style="white-space:pre-line;">${escHtml(clientAddr)}</div>` : ''}
+      </div>
+      <div>
+        <div class="party-label">จาก</div>
+        <div class="party-name">${escHtml(seller)}</div>
+        ${sellerPerson ? `<div style="font-size:13px; color:#2a4a70; margin-top:2px;">${escHtml(sellerPerson)}</div>` : ''}
+        ${sellerContact ? `<div class="party-detail" style="margin-top:4px;">${escHtml(sellerContact)}</div>` : ''}
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>รายการ</th><th class="r">จำนวน</th><th class="r">ราคา/หน่วย</th><th class="r">รวม</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="doc-totals">
+      <div class="doc-total-row"><span class="tl">ราคาก่อน VAT</span><span class="tv">฿${fmt(sub)}</span></div>
+      ${vatRow}
+      <div class="doc-grand-row"><span class="tl">ยอดรวมทั้งสิ้น</span><span class="tv">฿${fmt(grand)}</span></div>
+    </div>
+    ${note ? `<div class="doc-note">${escHtml(note).replace(/\n/g,'<br>')}</div>` : ''}
+    <div class="doc-footer">${escHtml(seller)} — ขอบคุณที่ไว้วางใจเรา</div>`;
+
+  document.getElementById('preview-section').classList.add('show');
+  document.getElementById('preview-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function exportPDF() {
+  if (!document.getElementById('preview-section').classList.contains('show')) {
+    showPreview();
+    setTimeout(exportPDF, 500);
+    return;
+  }
+
+  const btn = event.currentTarget;
+  btn.textContent = '⏳ กำลังสร้าง PDF...';
+  btn.disabled = true;
+
+  function doExport() {
+    const doc = document.getElementById('preview-doc');
+    const quoteNo = document.getElementById('quote-no').value || 'quotation';
+    const filename = 'ใบเสนอราคา-' + quoteNo + '.pdf';
+
+    const opt = {
+      margin: [10, 15, 10, 15],
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'avoid-all' }
+    };
+
+    html2pdf().set(opt).from(doc).save().then(() => {
+      btn.textContent = '📄 Export PDF';
+      btn.disabled = false;
+    }).catch(() => {
+      btn.textContent = '📄 Export PDF';
+      btn.disabled = false;
+      alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+    });
+  }
+
+  if (typeof html2pdf !== 'undefined') {
+    doExport();
+  } else {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    s.onload = doExport;
+    s.onerror = () => {
+      btn.textContent = '📄 Export PDF';
+      btn.disabled = false;
+      alert('ไม่สามารถโหลด library ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต\n\nหรือใช้ปุ่ม "พิมพ์ให้พอดี 1 หน้า" แล้วเลือก Save as PDF แทนครับ');
+    };
+    document.head.appendChild(s);
+  }
+}
+
+function resetScale() {
+  const doc = document.getElementById('preview-doc');
+  doc.style.transform = '';
+  doc.style.transformOrigin = '';
+  doc.style.width = '';
+  document.getElementById('fit-badge').style.display = 'none';
+}
+
+function printFit() {
+  if (!document.getElementById('preview-section').classList.contains('show')) {
+    showPreview();
+    setTimeout(printFit, 400);
+    return;
+  }
+  const doc = document.getElementById('preview-doc');
+  doc.style.transform = '';
+  doc.style.width = '';
+  const A4_H_PX = 1122; // A4 at 96dpi minus margins
+  const docH = doc.scrollHeight;
+  if (docH > A4_H_PX) {
+    const scale = Math.max(0.5, A4_H_PX / docH);
+    doc.style.transformOrigin = 'top left';
+    doc.style.transform = `scale(${scale})`;
+    doc.style.width = (100 / scale) + '%';
+  }
+  document.getElementById('fit-badge').style.display = 'inline-block';
+  setTimeout(() => window.print(), 120);
+}
+
+function resetForm() {
+  if (!confirm('ต้องการล้างข้อมูลทั้งหมด?')) return;
+  ['seller-name','seller-person','seller-addr','seller-contact','quote-no','client-name','client-company','client-contact','client-taxid','client-addr','note'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('vat').value = '7';
+  document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
+  removeLogo();
+  items = []; nextId = 1;
+  renderItems();
+  document.getElementById('preview-section').classList.remove('show');
+  resetScale();
+}
+
+// Init
+document.getElementById('quote-date').value = new Date().toISOString().split('T')[0];
+document.getElementById('quote-no').value = 'QT-' + new Date().getFullYear() + '-001';
+addItem();
+recalc();
+</script>
+</body>
+</html>
