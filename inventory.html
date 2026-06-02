@@ -375,14 +375,14 @@ function renderCatFilters() {
   const bar = document.querySelector('.filter-pills');
   // ลบ custom pills เก่าออกก่อน
   bar.querySelectorAll('.fpill.custom').forEach(b => b.remove());
-  // เพิ่ม custom pills ใหม่ก่อนปุ่ม +เพิ่มประเภท
-  const addBtn = bar.querySelector('.fpill-add');
+  // เพิ่ม custom pills ใหม่ก่อนปุ่ม ใกล้หมด/หมด เสมอ
+  const warnBtn = bar.querySelector('.fpill.warn');
   customCats.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = 'fpill custom';
     btn.textContent = cat;
     btn.onclick = () => setCatFilter(cat, btn);
-    bar.insertBefore(btn, addBtn);
+    bar.insertBefore(btn, warnBtn);
     // เพิ่มเข้า comboOptions ด้วย
     if (!comboOptions.cat.includes(cat)) comboOptions.cat.push(cat);
   });
